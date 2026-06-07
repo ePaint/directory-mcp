@@ -39,9 +39,9 @@ class Anchor:
 class Link:
     """A coordinate to attach to an entity, before it is stored as an `Anchor`.
 
-    The generic escape hatch for any system the named keyword args don't cover (github,
-    notion, linear, discord, …) — `remember_person`/`remember_project` accept these so the
-    surface isn't fixed to one org's MCP set.
+    The uniform way `remember_person`/`remember_project` take coordinates — every system
+    (slack, jira, github, notion, …) goes through `links`, none is privileged, so the surface
+    isn't fixed to one org's MCP set.
     """
 
     system: str

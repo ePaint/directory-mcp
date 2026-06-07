@@ -95,7 +95,8 @@ CAPTURE OPPORTUNISTICALLY — without being asked:
 - After reading a thread, ticket, email or meeting, call `record_reference`
   (it is idempotent — safe to call every time) and list the people involved.
 - When you learn a person's handle/email/role, call `remember_person`; it collapses on
-  shared email so re-recording is safe. Use `links` for any system beyond the named args.
+  shared email so re-recording is safe. Attach coordinates via `links`
+  (`{"system","ref_type","value"}`) — any system, none privileged.
 - When you learn an org relationship, call `relate` (e.g. "X" "reports_to" "Y").
 
 STAY CONSISTENT — `kind` / `system` / `ref_type` / relation are open vocab but writes are

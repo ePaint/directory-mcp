@@ -40,9 +40,9 @@ relationship is the ONE thing only the user knows — so ask it, don't guess.
    - The user can always pick "Other" and type a free-text relation.
    - Skip the question for anyone whose relationship the user already stated in the conversation.
 4. **Record:**
-   - `remember_person name=… email=… slack_id=… jira_account_id=… title=…` (collapses on email,
-     safe to repeat). For any system without a named argument (GitHub, Notion, Linear, …) pass
-     `links=[{"system","ref_type","value"}]`.
+   - `remember_person name=… email=… title=…` (collapses on email, safe to repeat). Attach
+     every cross-platform coordinate via `links=[{"system","ref_type","value"}]` — e.g.
+     `{"system":"slack","ref_type":"user","value":"U123"}`, jira, github, anything.
    - `relate` per the mapping below, using `"me"` as the self anchor.
    - Optional: `tag` the person (e.g. a team or project) if the source implies it.
 5. **Report** what was written (name → anchors + edge), and flag anyone not found in a system.
