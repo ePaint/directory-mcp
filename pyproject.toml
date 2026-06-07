@@ -1,0 +1,38 @@
+[project]
+name = "directory-mcp"
+version = "0.1.0"
+description = "Local single-user directory MCP: people, projects and artifacts and their cross-platform references (Slack / Jira / GitLab / GitHub / Outlook / … — open vocab)."
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy>=2",
+    "pydantic-settings>=2.5",
+    "python-dotenv>=1",
+    "mcp[cli]>=1.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "-q"
+pythonpath = ["."]
+testpaths = ["tests"]
