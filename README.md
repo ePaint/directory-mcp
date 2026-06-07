@@ -33,7 +33,7 @@ values are kept, never rejected. Use whatever MCPs you use; the directory adapts
 
 ## Install
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/) ([install uv](https://docs.astral.sh/uv/getting-started/installation/)).
 
 ```sh
 git clone https://github.com/ePaint/directory-mcp.git
