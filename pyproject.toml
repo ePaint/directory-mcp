@@ -1,6 +1,6 @@
 [project]
 name = "directory-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local single-user directory MCP: people, projects and artifacts and their cross-platform references (Slack / Jira / GitLab / GitHub / Outlook / … — open vocab)."
 license = "MIT"
 requires-python = ">=3.12"
