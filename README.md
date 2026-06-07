@@ -96,19 +96,6 @@ working directory. Start a new Claude Code session afterwards to pick them up.
   browser. It runs the bundled renderer (`scripts/graph/build_graph.py`); the installer points
   it at this checkout, so once installed it works from anywhere.
 
-## Visualizing your directory
-
-Ask the agent to *"graph my directory"* (the `/directory-graph` skill), or run the renderer
-directly from a checkout:
-
-```sh
-uv run python scripts/graph/build_graph.py
-```
-
-Either way it writes a standalone `scripts/graph/directory-graph.html` — an interactive
-vis-network graph you can open in a browser. **That file is gitignored: it's a full dump of
-your directory and must never be committed.**
-
 ## Tool reference
 
 The tool surface is deliberately thin — verbs that read like intentions, never the schema
