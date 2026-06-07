@@ -133,12 +133,12 @@ underneath. Your agent picks these for you; you rarely name them directly.
 
 - `set_self(name, email)` — mark the connected user. This is the anchor for resolving
   `"my boss"` / `"my team"` by walking edges.
-- `remember_person(name, email?, slack_id?, jira_account_id?, title?, links?, notes?)` —
-  record a person; collapses onto an existing one that shares the email, so re-recording is
-  safe. Use `links=[{"system","ref_type","value"}]` for any system the named args don't
-  cover (e.g. GitHub, Notion, Linear).
-- `remember_project(name, jira_keys?, slack_channels?, repos?, links?, notes?)` — a project
-  with however many coordinates it sprawls across.
+- `remember_person(name, email?, title?, links?, notes?)` — record a person; collapses onto
+  an existing one that shares the email, so re-recording is safe. `email` is the identity key;
+  attach every other coordinate via `links=[{"system","ref_type","value"}]` (Slack, Jira,
+  GitHub, Notion, anything — no system is privileged).
+- `remember_project(name, links?, notes?)` — a project with however many coordinates it
+  sprawls across, each given as a `links` entry.
 - `remember_team(name)` / `remember_org(name)` — grouping entities for `member_of` edges.
 - `relate(subject, relation, target)` — record a relationship, e.g.
   `relate("alice@example.com", "reports_to", "bob@example.com")`. Idempotent.

@@ -97,9 +97,14 @@ async def test_contacts_group_anchors_by_system(directory: Directory) -> None:
 async def test_remember_project_holds_many_anchors(directory: Directory) -> None:
     project = await directory.remember_project(
         name="Checkout Revamp",
-        jira_keys=["VX", "PAY"],
-        slack_channels=["#checkout", "#payments-war-room"],
-        repos=["org/checkout-web", "org/checkout-api"],
+        links=[
+            Link(system="jira", ref_type="project_key", value="VX"),
+            Link(system="jira", ref_type="project_key", value="PAY"),
+            Link(system="slack", ref_type="channel", value="#checkout"),
+            Link(system="slack", ref_type="channel", value="#payments-war-room"),
+            Link(system="gitlab", ref_type="repo", value="org/checkout-web"),
+            Link(system="gitlab", ref_type="repo", value="org/checkout-api"),
+        ],
     )
 
     contacts = await directory.contacts(entity_id=project.id)
@@ -153,12 +158,12 @@ async def test_relate_is_idempotent(directory: Directory) -> None:
 
 
 async def test_remember_person_is_idempotent_on_anchors(directory: Directory) -> None:
-    await directory.remember_person(
-        name="Ada", email="ada@example.com", slack_id="U1", jira_account_id="J1"
-    )
-    await directory.remember_person(
-        name="Ada Lovelace", email="ada@example.com", slack_id="U1", jira_account_id="J1"
-    )
+    coords = [
+        Link(system="slack", ref_type="user", value="U1"),
+        Link(system="jira", ref_type="user", value="J1"),
+    ]
+    await directory.remember_person(name="Ada", email="ada@example.com", links=coords)
+    await directory.remember_person(name="Ada Lovelace", email="ada@example.com", links=coords)
 
     person = await directory.resolve(query="ada@example.com")
     assert person is not None
@@ -246,7 +251,9 @@ async def test_tag_and_find_by_tag(directory: Directory) -> None:
 
 
 async def test_vocabulary_merges_suggested_and_in_use(directory: Directory) -> None:
-    await directory.remember_project(name="Checkout", jira_keys=["VX"])
+    await directory.remember_project(
+        name="Checkout", links=[Link(system="jira", ref_type="project_key", value="VX")]
+    )
 
     vocabulary = await directory.vocabulary()
 

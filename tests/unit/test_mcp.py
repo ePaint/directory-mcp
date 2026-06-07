@@ -53,7 +53,11 @@ async def test_check_what_my_boss_said_end_to_end() -> None:
     await _call(
         server,
         "remember_person",
-        {"name": "Grace Hopper", "email": "grace@example.com", "slack_id": "U777"},
+        {
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "links": [{"system": "slack", "ref_type": "user", "value": "U777"}],
+        },
     )
     await _call(server, "relate", {"subject": "me", "relation": "reports_to", "target": "grace@example.com"})
 
@@ -68,7 +72,11 @@ async def test_who_to_query_returns_coordinates_by_system() -> None:
     await _call(
         server,
         "remember_person",
-        {"name": "Ada", "email": "ada@example.com", "jira_account_id": "acct-9"},
+        {
+            "name": "Ada",
+            "email": "ada@example.com",
+            "links": [{"system": "jira", "ref_type": "user", "value": "acct-9"}],
+        },
     )
 
     coords = await _call(server, "who_to_query", {"query": "ada@example.com"})

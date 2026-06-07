@@ -336,21 +336,11 @@ class Directory:
         *,
         name: str,
         email: str | None = None,
-        slack_id: str | None = None,
-        jira_account_id: str | None = None,
         title: str | None = None,
         links: Sequence[Link] = (),
         notes: str = "",
     ) -> Entity:
         person = await self.ensure_person(display_name=name, email=email, notes=notes)
-        if slack_id is not None:
-            await self._ensure_anchor(
-                entity_id=person.id, system="slack", ref_type="user", value=slack_id
-            )
-        if jira_account_id is not None:
-            await self._ensure_anchor(
-                entity_id=person.id, system="jira", ref_type="user", value=jira_account_id
-            )
         await self._apply_links(entity_id=person.id, links=links)
         if title is not None:
             await self.store.add_observation(
@@ -423,26 +413,11 @@ class Directory:
         self,
         *,
         name: str,
-        jira_keys: Sequence[str] = (),
-        slack_channels: Sequence[str] = (),
-        repos: Sequence[str] = (),
         links: Sequence[Link] = (),
         notes: str = "",
     ) -> Entity:
-        """A project with however many Jira keys / Slack channels / repos it actually sprawls across."""
+        """A project with however many coordinates (Jira keys, channels, repos, …) it sprawls across."""
         project = await self.store.add_entity(kind="project", display_name=name, notes=notes)
-        for key in jira_keys:
-            await self._ensure_anchor(
-                entity_id=project.id, system="jira", ref_type="project_key", value=key
-            )
-        for channel in slack_channels:
-            await self._ensure_anchor(
-                entity_id=project.id, system="slack", ref_type="channel", value=channel
-            )
-        for repo in repos:
-            await self._ensure_anchor(
-                entity_id=project.id, system="gitlab", ref_type="repo", value=repo
-            )
         await self._apply_links(entity_id=project.id, links=links)
         return project
 

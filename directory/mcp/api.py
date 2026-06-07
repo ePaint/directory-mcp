@@ -134,22 +134,19 @@ def build_mcp_server(*, directory: Directory) -> FastMCP:
     async def remember_person(
         name: str,
         email: str | None = None,
-        slack_id: str | None = None,
-        jira_account_id: str | None = None,
         title: str | None = None,
         links: list[dict[str, str]] | None = None,
         notes: str = "",
     ) -> dict[str, Any]:
         """Record a person. Reuses an existing one that shares the email rather than duplicating.
 
-        `slack_id`/`jira_account_id` are shortcuts; `links` attaches any other system as
-        `{"system","ref_type","value"}` (e.g. github/notion/linear) so you aren't limited to those.
+        `email` is the identity key (re-recording the same address updates, never duplicates).
+        Attach every other coordinate via `links` as `{"system","ref_type","value"}` — e.g.
+        `{"system":"slack","ref_type":"user","value":"U123"}`, github, jira, notion, anything.
         """
         person = await directory.remember_person(
             name=name,
             email=email,
-            slack_id=slack_id,
-            jira_account_id=jira_account_id,
             title=title,
             links=_links(links),
             notes=notes,
@@ -159,22 +156,17 @@ def build_mcp_server(*, directory: Directory) -> FastMCP:
     @server.tool()
     async def remember_project(
         name: str,
-        jira_keys: list[str] | None = None,
-        slack_channels: list[str] | None = None,
-        repos: list[str] | None = None,
         links: list[dict[str, str]] | None = None,
         notes: str = "",
     ) -> dict[str, Any]:
-        """Record a project with however many Jira keys, Slack channels and repos it spans.
+        """Record a project with however many coordinates it spans.
 
-        `links` attaches any other system as `{"system","ref_type","value"}` (e.g. a Notion
-        page or GitHub repo) so the project isn't limited to the named keyword coordinates.
+        Attach each coordinate via `links` as `{"system","ref_type","value"}` — e.g. a Jira
+        project key `{"system":"jira","ref_type":"project_key","value":"VX"}`, a Slack channel,
+        a repo, a Notion page, anything. No system is privileged.
         """
         project = await directory.remember_project(
             name=name,
-            jira_keys=jira_keys or [],
-            slack_channels=slack_channels or [],
-            repos=repos or [],
             links=_links(links),
             notes=notes,
         )
