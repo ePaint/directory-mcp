@@ -51,6 +51,21 @@ The database is created on first run at `~/.local/share/directory-mcp/directory.
 Override with the `DIRECTORY_DATABASE_URL` environment variable (or a `.env` file in the
 project root) if you want it elsewhere.
 
+Then run the installer to wire up the rest — the [bundled skills](#bundled-skills) and the
+[proactive-use rule](#make-your-agent-reach-for-it):
+
+```sh
+./install.sh         # macOS / Linux / Git Bash / WSL
+```
+
+```powershell
+.\install.ps1        # Windows PowerShell
+```
+
+It's idempotent — safe to re-run, e.g. after you move the repo (the skill bakes in an
+absolute path to this checkout). Start a new Claude Code session afterwards to pick everything
+up.
+
 ## Getting started
 
 You drive the directory through your agent in plain language — it calls the tools for you.
@@ -67,43 +82,22 @@ owns checkout?"*, or *"graph my org"* — and the agent resolves them against th
 
 ## Make your agent reach for it
 
-The server ships usage `instructions` that Claude Code surfaces automatically, but the
-strongest signal is a rule in your own config. Add this to your `~/.claude/CLAUDE.md` (global,
-applies everywhere) or a project `CLAUDE.md` so the agent uses the directory unprompted:
-
-> **Always use the `directory` MCP, proactively, in every session — without being asked.**
-> Whenever a person, project, team or org is referenced — including self-relative phrases like
-> "my boss" / "my team" — look it up FIRST with `whois` (who they are + their relationships)
-> or `who_to_query` (the exact coordinates to feed the other MCPs). Never ask who someone is
-> if the directory can answer. Capture opportunistically too: as you learn a handle / email /
-> role, an org relationship, or touch an artifact (thread, ticket, email, meeting), record it
-> without being asked — `remember_person` (collapses on shared email), `relate`,
-> `record_reference` (idempotent). Check `vocab` before inventing a new
-> `kind` / `system` / `ref_type` / relation value. If the `directory` MCP is not connected in a
-> session, skip silently — never block on it.
+The server ships usage `instructions` that Claude Code surfaces automatically — but the
+strongest signal is a rule in your own config. The installer handles this: it appends the
+proactive-use rule from [`directory-rule.md`](directory-rule.md) to your `~/.claude/CLAUDE.md`
+(between markers, so re-running won't duplicate it). The rule tells the agent to resolve any
+person/project against the directory *first*, never ask who someone is if the directory knows,
+and capture handles/relationships as it works. Drop the same snippet into a project `CLAUDE.md`
+if you want it scoped to one repo.
 
 ## Bundled skills
 
 The repo ships two [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills)
 under `.claude/skills/`. As checked in they are **project skills** — active only when Claude
-Code runs inside this repo. To use them from your own projects, install them into your
-personal skills directory with the bundled installer:
-
-```sh
-./install-skills.sh        # macOS / Linux / Git Bash / WSL
-```
-
-```powershell
-.\install-skills.ps1       # Windows PowerShell
-```
-
-The installer copies both skills to `~/.claude/skills/` (honoring `CLAUDE_CONFIG_DIR` if set)
-and rewrites `/directory-graph` to point its renderer at this checkout, so it works from any
-working directory. Start a new Claude Code session afterwards to pick them up.
-
-> **Note:** [uv](https://docs.astral.sh/uv/) must be installed and on your `PATH` — the skills
-> run the renderer through it. The rewrite bakes in an absolute path to this checkout, so if
-> you move or rename the repo, just re-run the installer.
+Code runs inside this repo. To use them everywhere, run the installer (see
+[Install](#install)). It copies both skills to `~/.claude/skills/` (honoring
+`CLAUDE_CONFIG_DIR` if set) and rewrites `/directory-graph` to point its renderer at this
+checkout so it works from any working directory.
 
 - **`/directory-enroll`** — turn a name (or a roster, like everyone in this week's meetings)
   into directory entries. It resolves each person across whatever people-search MCPs you have
