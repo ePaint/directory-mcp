@@ -72,15 +72,16 @@ def _dossier_dict(dossier: Dossier) -> dict[str, Any]:
 _INSTRUCTIONS = """\
 A consolidation directory of people, projects and artifacts and how to reach them across
 whatever systems you use (Slack, Jira, GitLab, GitHub, Outlook, Notion, … — open vocab).
-Use it two ways:
+USE IT PROACTIVELY, in every session, without being asked — it only pays off if you both
+read from it and feed it as you work.
 
-LOOK UP — before acting on a person or project, call `whois` (resolves names, emails and
-self-relative phrases like "my boss" / "my team") or `who_to_query` to get the exact
-coordinates (handle / account id / email) to feed the other MCPs. Don't ask the user who
-someone is if the directory knows.
+LOOK UP FIRST — whenever a person, project, team or org is referenced (including
+self-relative phrases like "my boss" / "my team"), resolve it here BEFORE acting: call
+`whois` for who they are + their relationships, or `who_to_query` for the exact coordinates
+(handle / account id / email) to feed the other MCPs. Never ask the user who someone is if
+the directory can answer.
 
-CAPTURE OPPORTUNISTICALLY — the directory only gets smart if you feed it as you work.
-Without being asked:
+CAPTURE OPPORTUNISTICALLY — without being asked:
 - After reading a thread, ticket, email or meeting, call `record_reference`
   (it is idempotent — safe to call every time) and list the people involved.
 - When you learn a person's handle/email/role, call `remember_person`; it collapses on
