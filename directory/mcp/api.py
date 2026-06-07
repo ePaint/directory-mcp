@@ -7,7 +7,7 @@ entities, anchors or edges. All graph shape stays hidden behind this layer.
 """
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from mcp.server.fastmcp import FastMCP
 
@@ -15,7 +15,17 @@ from directory.models import Link
 from directory.resolve import Directory, Dossier
 
 
-def _links(raw: list[dict[str, str]] | None) -> list[Link]:
+class LinkInput(TypedDict):
+    """One external coordinate, as the agent passes it. Names the fields in the tool schema
+    so the LLM fills them explicitly (system/ref_type/value) instead of guessing dict keys."""
+
+    system: str
+    ref_type: str
+    value: str
+    label: NotRequired[str]
+
+
+def _links(raw: list[LinkInput] | None) -> list[Link]:
     return [
         Link(
             system=item["system"],
@@ -135,7 +145,7 @@ def build_mcp_server(*, directory: Directory) -> FastMCP:
         name: str,
         email: str | None = None,
         title: str | None = None,
-        links: list[dict[str, str]] | None = None,
+        links: list[LinkInput] | None = None,
         notes: str = "",
     ) -> dict[str, Any]:
         """Record a person. Reuses an existing one that shares the email rather than duplicating.
@@ -156,7 +166,7 @@ def build_mcp_server(*, directory: Directory) -> FastMCP:
     @server.tool()
     async def remember_project(
         name: str,
-        links: list[dict[str, str]] | None = None,
+        links: list[LinkInput] | None = None,
         notes: str = "",
     ) -> dict[str, Any]:
         """Record a project with however many coordinates it spans.
