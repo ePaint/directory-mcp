@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 # Install directory-mcp into Claude Code: copy the bundled skills into your personal skills
 # directory and add the proactive-use rule to your CLAUDE.md. macOS / Linux / Git Bash / WSL.
+#
+# Usage: ./install.sh [--no-rule]
+#   --no-rule   install the skills only; leave CLAUDE.md untouched.
 set -euo pipefail
+
+NO_RULE=0
+for arg in "$@"; do
+  case "$arg" in
+    --no-rule) NO_RULE=1 ;;
+    *) echo "unknown option: $arg (usage: ./install.sh [--no-rule])" >&2; exit 2 ;;
+  esac
+done
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
@@ -31,7 +42,9 @@ echo "pointed /directory-graph at $REPO"
 CLAUDE_MD="$CONFIG/CLAUDE.md"
 BEGIN="<!-- directory-mcp:begin -->"
 END="<!-- directory-mcp:end -->"
-if [ -f "$CLAUDE_MD" ] && grep -qF "$BEGIN" "$CLAUDE_MD"; then
+if [ "$NO_RULE" -eq 1 ]; then
+  echo "skipped CLAUDE.md rule (--no-rule)"
+elif [ -f "$CLAUDE_MD" ] && grep -qF "$BEGIN" "$CLAUDE_MD"; then
   echo "directory rule already in $CLAUDE_MD — skipping"
 else
   { printf '\n%s\n' "$BEGIN"; cat "$REPO/directory-rule.md"; printf '%s\n' "$END"; } >> "$CLAUDE_MD"

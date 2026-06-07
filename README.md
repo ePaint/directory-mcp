@@ -66,6 +66,9 @@ It's idempotent — safe to re-run, e.g. after you move the repo (the skill bake
 absolute path to this checkout). Start a new Claude Code session afterwards to pick everything
 up.
 
+Pass `--no-rule` (PowerShell: `-NoRule`) to install only the skills and leave your `CLAUDE.md`
+untouched — you can still add the [rule](#make-your-agent-reach-for-it) by hand later.
+
 ## Getting started
 
 You drive the directory through your agent in plain language — it calls the tools for you.

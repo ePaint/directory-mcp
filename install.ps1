@@ -1,5 +1,9 @@
 # Install directory-mcp into Claude Code: copy the bundled skills into your personal skills
 # directory and add the proactive-use rule to your CLAUDE.md. Windows PowerShell.
+#
+# Usage: .\install.ps1 [-NoRule]
+#   -NoRule   install the skills only; leave CLAUDE.md untouched.
+param([switch]$NoRule)
 $ErrorActionPreference = 'Stop'
 
 $Repo = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -29,7 +33,9 @@ Write-Host "pointed /directory-graph at $Repo"
 $ClaudeMd = Join-Path $Config 'CLAUDE.md'
 $Begin = '<!-- directory-mcp:begin -->'
 $End = '<!-- directory-mcp:end -->'
-if ((Test-Path $ClaudeMd) -and ((Get-Content -Raw $ClaudeMd) -like "*$Begin*")) {
+if ($NoRule) {
+    Write-Host "skipped CLAUDE.md rule (-NoRule)"
+} elseif ((Test-Path $ClaudeMd) -and ((Get-Content -Raw $ClaudeMd) -like "*$Begin*")) {
     Write-Host "directory rule already in $ClaudeMd — skipping"
 } else {
     $rule = Get-Content -Raw (Join-Path $Repo 'directory-rule.md')
