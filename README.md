@@ -69,21 +69,28 @@ owns checkout?"*, or *"graph my org"* — and the agent resolves them against th
 
 The repo ships two [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills)
 under `.claude/skills/`. As checked in they are **project skills** — active only when Claude
-Code runs inside this repo. To use them from your own projects, copy them into your personal
-skills directory:
+Code runs inside this repo. To use them from your own projects, install them into your
+personal skills directory with the bundled installer:
 
 ```sh
-cp -r .claude/skills/directory-enroll ~/.claude/skills/
-cp -r .claude/skills/directory-graph  ~/.claude/skills/
+./install-skills.sh        # macOS / Linux / Git Bash / WSL
 ```
+
+```powershell
+.\install-skills.ps1       # Windows PowerShell
+```
+
+The installer copies both skills to `~/.claude/skills/` (honoring `CLAUDE_CONFIG_DIR` if set)
+and rewrites `/directory-graph` to point its renderer at this checkout, so it works from any
+working directory. Start a new Claude Code session afterwards to pick them up.
 
 - **`/directory-enroll`** — turn a name (or a roster, like everyone in this week's meetings)
   into directory entries. It resolves each person across whatever people-search MCPs you have
   connected, collapses duplicates by email, asks you the one thing only you know (the
   relationship), and records it. MCP-only, so it works from anywhere.
 - **`/directory-graph`** — render your directory to an interactive graph and open it in the
-  browser. It runs the bundled renderer (`scripts/graph/build_graph.py`) by relative path, so
-  invoke it from a checkout of this repo.
+  browser. It runs the bundled renderer (`scripts/graph/build_graph.py`); the installer points
+  it at this checkout, so once installed it works from anywhere.
 
 ## Visualizing your directory
 
