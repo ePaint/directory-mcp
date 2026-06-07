@@ -128,19 +128,6 @@ be committed.**
 - Treat the database as you would your contacts: it accumulates names, roles and
   cross-platform handles of people you work with.
 
-## Development
-
-```sh
-uv run pytest        # tests (the store double is parametrized so memory/SQL can't drift)
-uv run ruff check .  # lint
-uv run mypy .        # types (strict)
-```
-
-The codebase follows a bounded-context layout: each package exposes a public `api.py` and
-hides internals under `internal/`. The store is one cohesive `DirectoryStore` with an
-in-memory double and a SQLAlchemy implementation, exercised by a single parametrized fixture
-so the two can't diverge. Comments explain *why*, not *what*.
-
 ## License
 
 [MIT](LICENSE).
