@@ -1,5 +1,8 @@
 # directory-mcp
 
+[![Release](https://img.shields.io/github/v/release/ePaint/directory-mcp?sort=semver)](https://github.com/ePaint/directory-mcp/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A **local, single-user directory** for your AI coding agent: a consolidation layer that
 records the people, projects, teams and artifacts you work with — and their coordinates
 across every system you use (Slack, Jira, GitLab, GitHub, Outlook, Notion, …).
