@@ -84,6 +84,10 @@ The installer copies both skills to `~/.claude/skills/` (honoring `CLAUDE_CONFIG
 and rewrites `/directory-graph` to point its renderer at this checkout, so it works from any
 working directory. Start a new Claude Code session afterwards to pick them up.
 
+> **Note:** [uv](https://docs.astral.sh/uv/) must be installed and on your `PATH` — the skills
+> run the renderer through it. The rewrite bakes in an absolute path to this checkout, so if
+> you move or rename the repo, just re-run the installer.
+
 - **`/directory-enroll`** — turn a name (or a roster, like everyone in this week's meetings)
   into directory entries. It resolves each person across whatever people-search MCPs you have
   connected, collapses duplicates by email, asks you the one thing only you know (the
