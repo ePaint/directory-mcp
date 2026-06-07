@@ -36,21 +36,12 @@ values are kept, never rejected. Use whatever MCPs you use; the directory adapts
 Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```sh
-git clone <your-fork-url> directory-mcp
+git clone https://github.com/ePaint/directory-mcp.git
 cd directory-mcp
 uv sync
 ```
 
-Verify it works:
-
-```sh
-uv run pytest        # the full suite
-uv run python mcp_server.py   # starts the stdio server (Ctrl-C to stop)
-```
-
-## Register with Claude Code
-
-Add it as a user-scoped MCP server so it's available in every session:
+Register it with Claude Code as a user-scoped MCP server, so it's available in every session:
 
 ```sh
 claude mcp add directory -- uv run --directory /absolute/path/to/directory-mcp python mcp_server.py
@@ -60,10 +51,57 @@ The database is created on first run at `~/.local/share/directory-mcp/directory.
 Override with the `DIRECTORY_DATABASE_URL` environment variable (or a `.env` file in the
 project root) if you want it elsewhere.
 
-## Using it
+## Getting started
+
+You drive the directory through your agent in plain language — it calls the tools for you.
+Two things to do first:
+
+1. **Tell it who you are**, so self-relative phrases like *"my boss"* resolve: *"set me as
+   Ada Lovelace, ada@example.com"* → `set_self`.
+2. **Enroll some people.** The bundled [`/directory-enroll`](#bundled-skills) skill finds a
+   person across your connected MCPs, asks how they relate to you, and records them. Or just
+   ask: *"add my teammate Alex"*.
+
+After that, ask things like *"who's my boss?"*, *"what's the Slack id for the person who
+owns checkout?"*, or *"graph my org"* — and the agent resolves them against the directory.
+
+## Bundled skills
+
+The repo ships two [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills)
+under `.claude/skills/`. As checked in they are **project skills** — active only when Claude
+Code runs inside this repo. To use them from your own projects, copy them into your personal
+skills directory:
+
+```sh
+cp -r .claude/skills/directory-enroll ~/.claude/skills/
+cp -r .claude/skills/directory-graph  ~/.claude/skills/
+```
+
+- **`/directory-enroll`** — turn a name (or a roster, like everyone in this week's meetings)
+  into directory entries. It resolves each person across whatever people-search MCPs you have
+  connected, collapses duplicates by email, asks you the one thing only you know (the
+  relationship), and records it. MCP-only, so it works from anywhere.
+- **`/directory-graph`** — render your directory to an interactive graph and open it in the
+  browser. It runs the bundled renderer (`scripts/graph/build_graph.py`) by relative path, so
+  invoke it from a checkout of this repo.
+
+## Visualizing your directory
+
+Ask the agent to *"graph my directory"* (the `/directory-graph` skill), or run the renderer
+directly from a checkout:
+
+```sh
+uv run python scripts/graph/build_graph.py
+```
+
+Either way it writes a standalone `scripts/graph/directory-graph.html` — an interactive
+vis-network graph you can open in a browser. **That file is gitignored: it's a full dump of
+your directory and must never be committed.**
+
+## Tool reference
 
 The tool surface is deliberately thin — verbs that read like intentions, never the schema
-underneath.
+underneath. Your agent picks these for you; you rarely name them directly.
 
 **Look up** (read):
 
@@ -105,18 +143,6 @@ matching Acme wins. Connection is the confidence gate — exactly one connected 
 gives a confident answer; two or more set `ambiguous: true` and return *all* of them.
 Activity (how recently/often something is touched) only orders the best guess; it never
 silently drops a candidate. The agent consuming the result decides.
-
-## Visualizing your directory
-
-```sh
-uv run python scripts/graph/build_graph.py
-```
-
-This renders your live database to a standalone `scripts/graph/directory-graph.html` — an
-interactive vis-network graph you can open in a browser. From within Claude Code you can do
-the same with the bundled `/directory-graph` slash command, which renders and opens it for
-you. **The rendered HTML is gitignored — it's a full dump of your directory and should never
-be committed.**
 
 ## Privacy & scope
 
