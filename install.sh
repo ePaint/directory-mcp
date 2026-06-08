@@ -32,20 +32,20 @@ done
 graph="$DEST/directory-graph/SKILL.md"
 tmp="$(mktemp)"
 sed -e "s#uv run python scripts/graph/build_graph.py#uv run --directory \"$REPO\" python scripts/graph/build_graph.py#g" \
-    -e "s#scripts/graph/directory-graph.html#$REPO/scripts/graph/directory-graph.html#g" \
+    -e "s#scripts/graph/directory-graph.html#\"$REPO/scripts/graph/directory-graph.html\"#g" \
     "$graph" > "$tmp"
 mv "$tmp" "$graph"
 echo "pointed /directory-graph at $REPO"
 
 # --- proactive-use rule -----------------------------------------------------------------
-# Append the rule to CLAUDE.md between markers, idempotently — re-running won't duplicate it.
+# Append the rule to CLAUDE.md between markers, idempotently -- re-running won't duplicate it.
 CLAUDE_MD="$CONFIG/CLAUDE.md"
 BEGIN="<!-- directory-mcp:begin -->"
 END="<!-- directory-mcp:end -->"
 if [ "$NO_RULE" -eq 1 ]; then
   echo "skipped CLAUDE.md rule (--no-rule)"
 elif [ -f "$CLAUDE_MD" ] && grep -qF "$BEGIN" "$CLAUDE_MD"; then
-  echo "directory rule already in $CLAUDE_MD — skipping"
+  echo "directory rule already in $CLAUDE_MD - skipping"
 else
   { printf '\n%s\n' "$BEGIN"; cat "$REPO/directory-rule.md"; printf '%s\n' "$END"; } >> "$CLAUDE_MD"
   echo "added directory rule to $CLAUDE_MD"

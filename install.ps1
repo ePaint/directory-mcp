@@ -24,19 +24,19 @@ foreach ($skill in 'directory-enroll', 'directory-graph') {
 $graph = Join-Path $Dest 'directory-graph\SKILL.md'
 $text = Get-Content -Raw $graph
 $text = $text.Replace('uv run python scripts/graph/build_graph.py', "uv run --directory `"$Repo`" python scripts/graph/build_graph.py")
-$text = $text.Replace('scripts/graph/directory-graph.html', (Join-Path $Repo 'scripts\graph\directory-graph.html'))
+$text = $text.Replace('scripts/graph/directory-graph.html', '"' + (Join-Path $Repo 'scripts\graph\directory-graph.html') + '"')
 Set-Content -NoNewline -Path $graph -Value $text
 Write-Host "pointed /directory-graph at $Repo"
 
 # --- proactive-use rule -----------------------------------------------------------------
-# Append the rule to CLAUDE.md between markers, idempotently — re-running won't duplicate it.
+# Append the rule to CLAUDE.md between markers, idempotently -- re-running won't duplicate it.
 $ClaudeMd = Join-Path $Config 'CLAUDE.md'
 $Begin = '<!-- directory-mcp:begin -->'
 $End = '<!-- directory-mcp:end -->'
 if ($NoRule) {
     Write-Host "skipped CLAUDE.md rule (-NoRule)"
 } elseif ((Test-Path $ClaudeMd) -and ((Get-Content -Raw $ClaudeMd) -like "*$Begin*")) {
-    Write-Host "directory rule already in $ClaudeMd — skipping"
+    Write-Host "directory rule already in $ClaudeMd - skipping"
 } else {
     $rule = Get-Content -Raw (Join-Path $Repo 'directory-rule.md')
     Add-Content -Path $ClaudeMd -Value "`n$Begin`n$rule$End"
