@@ -50,7 +50,8 @@ record_reference / merge); `directory/mcp/api.py` thin verb surface; `mcp_server
 `directory/vocab.py` canonical vocab + write-normalization (folds `Reports-To`→`reports_to`);
 `vocab` / `tag` / `find_by_tag` tools; `record_reference` idempotent on (system,value) with
 `occurred_at`; tags modeled as kind='tag' entities + 'tagged' edges (no new table); FastMCP
-server `instructions` wire opportunistic capture. Append-only `interaction` log feeds usage
+server `instructions` wire look-up-first, follow-through (returned entities/anchors are
+the coverage map — query each system before answering) and opportunistic capture. Append-only `interaction` log feeds usage
 stats (whois shows `hits`/`last_seen`) and context-aware resolution: `resolve_full` parses
 "X from the Y project" and ranks candidates CONNECTION-FIRST (the X actually edged to a
 matching Y). Connection is the CONFIDENCE GATE: exactly one plausible candidate → confident

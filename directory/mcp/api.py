@@ -91,6 +91,11 @@ self-relative phrases like "my boss" / "my team"), resolve it here BEFORE acting
 (handle / account id / email) to feed the other MCPs. Never ask the user who someone is if
 the directory can answer.
 
+FOLLOW THROUGH — the entities and anchors a lookup returns (email / slack_thread /
+ticket / channel / repo / …) are the coverage map for that subject: each names a system
+to actually query before answering. Don't cherry-pick the familiar ones — a skipped
+`email` entity can hide the client decision that invalidates everything else.
+
 CAPTURE OPPORTUNISTICALLY — without being asked:
 - After reading a thread, ticket, email or meeting, call `record_reference`
   (it is idempotent — safe to call every time) and list the people involved.
