@@ -38,24 +38,42 @@ values are kept, never rejected. Use whatever MCPs you use; the directory adapts
 
 Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/) ([install uv](https://docs.astral.sh/uv/getting-started/installation/)).
 
+### As a Claude Code plugin (recommended)
+
+One install wires up all three pieces — the MCP server, both [bundled skills](#bundled-skills),
+and the [proactive-use rule](#make-your-agent-reach-for-it), injected into every session by a
+SessionStart hook:
+
+```sh
+claude plugin marketplace add ePaint/directory-mcp   # or the path to a local clone
+claude plugin install directory-mcp@directory-mcp
+```
+
+Start a new Claude Code session to pick it up. The database is created on first run at
+`~/.local/share/directory-mcp/directory.db`; override with the `DIRECTORY_DATABASE_URL`
+environment variable (or a `.env` file in the plugin root) if you want it elsewhere.
+
+Toggle it without uninstalling — this turns the server, the skills and the rule off together:
+
+- **Globally**: `claude plugin disable directory-mcp` / `claude plugin enable directory-mcp`.
+- **Per project**: the same commands with `--scope project` (shared via the project's
+  settings) or `--scope local` (personal, untracked), run inside that project.
+
+Uninstall: `claude plugin uninstall directory-mcp`, then
+`claude plugin marketplace remove directory-mcp`.
+
+### Manual install (no plugin)
+
+If you'd rather not use plugins, wire the pieces up individually:
+
 ```sh
 git clone https://github.com/ePaint/directory-mcp.git
 cd directory-mcp
 uv sync
-```
-
-Register it with Claude Code as a user-scoped MCP server, so it's available in every session:
-
-```sh
 claude mcp add directory -- uv run --directory /absolute/path/to/directory-mcp python mcp_server.py
 ```
 
-The database is created on first run at `~/.local/share/directory-mcp/directory.db`.
-Override with the `DIRECTORY_DATABASE_URL` environment variable (or a `.env` file in the
-project root) if you want it elsewhere.
-
-Then run the installer to wire up the rest — the [bundled skills](#bundled-skills) and the
-[proactive-use rule](#make-your-agent-reach-for-it):
+Then run the installer for the skills and the rule:
 
 ```sh
 ./install.sh         # macOS / Linux / Git Bash / WSL
@@ -67,10 +85,19 @@ Then run the installer to wire up the rest — the [bundled skills](#bundled-ski
 
 It's idempotent — safe to re-run, e.g. after you move the repo (the skill bakes in an
 absolute path to this checkout). Start a new Claude Code session afterwards to pick everything
-up.
+up. Pass `--no-rule` (PowerShell: `-NoRule`) to install only the skills and leave your
+`CLAUDE.md` untouched.
 
-Pass `--no-rule` (PowerShell: `-NoRule`) to install only the skills and leave your `CLAUDE.md`
-untouched — you can still add the [rule](#make-your-agent-reach-for-it) by hand later.
+Manual uninstall:
+
+```sh
+./install.sh --uninstall     # PowerShell: .\install.ps1 -Uninstall
+claude mcp remove directory
+```
+
+The first command removes the skills, the rule file and the `CLAUDE.md` import block; the
+server registration is separate, so remove it with the second. To merely turn the rule off
+without uninstalling, see [toggling](#make-your-agent-reach-for-it).
 
 ## Getting started
 
@@ -89,21 +116,41 @@ owns checkout?"*, or *"graph my org"* — and the agent resolves them against th
 ## Make your agent reach for it
 
 The server ships usage `instructions` that Claude Code surfaces automatically — but the
-strongest signal is a rule in your own config. The installer handles this: it appends the
-proactive-use rule from [`directory-rule.md`](directory-rule.md) to your `~/.claude/CLAUDE.md`
-(between markers, so re-running won't duplicate it). The rule tells the agent to resolve any
-person/project against the directory *first*, never ask who someone is if the directory knows,
-and capture handles/relationships as it works. Drop the same snippet into a project `CLAUDE.md`
-if you want it scoped to one repo.
+strongest signal is [`directory-rule.md`](directory-rule.md) in your session context: resolve
+any person/project against the directory *first*, never ask who someone is if the directory
+knows, follow through on every anchor it returns, and capture handles/relationships as you
+work.
+
+**Plugin install**: a SessionStart hook injects the rule into every session (re-firing on
+resume, clear and compact), so there is nothing to wire up — disable the plugin and the rule
+goes with it.
+
+**Manual install**: the installer copies the rule to `~/.claude/directory-rule.md` and adds a
+single `@./directory-rule.md` import line to your `~/.claude/CLAUDE.md`, between markers so
+re-running won't duplicate it (re-running also migrates older installs that inlined the whole
+rule). To scope it to one repo instead, inline the snippet into that project's `CLAUDE.md` —
+an import won't work there, because project-level imports that resolve outside the project
+directory are silently skipped.
+
+Because the manually installed rule is one imported file, it toggles without editing
+`CLAUDE.md`:
+
+- **Globally** — `./install.sh --disable` / `--enable` (PowerShell: `-Disable` / `-Enable`).
+  This renames the rule file aside; Claude Code skips a missing import silently.
+- **Per project** — exclude the file in that project's `.claude/settings.json` (or
+  `settings.local.json`), which catches `@`-imported files too:
+
+  ```json
+  { "claudeMdExcludes": ["**/directory-rule.md"] }
+  ```
 
 ## Bundled skills
 
 The repo ships two [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills)
-under `.claude/skills/`. As checked in they are **project skills** — active only when Claude
-Code runs inside this repo. To use them everywhere, run the installer (see
-[Install](#install)). It copies both skills to `~/.claude/skills/` (honoring
-`CLAUDE_CONFIG_DIR` if set) and rewrites `/directory-graph` to point its renderer at this
-checkout so it works from any working directory.
+under `skills/`. The plugin exposes them everywhere automatically (namespaced, e.g.
+`directory-mcp:directory-graph`). The manual installer instead copies both to
+`~/.claude/skills/` (honoring `CLAUDE_CONFIG_DIR` if set) and rewrites `/directory-graph` to
+point its renderer at this checkout so it works from any working directory.
 
 - **`/directory-enroll`** — turn a name (or a roster, like everyone in this week's meetings)
   into directory entries. It resolves each person across whatever people-search MCPs you have

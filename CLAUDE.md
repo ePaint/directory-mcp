@@ -41,6 +41,11 @@ observation memory model plus a universal anchor layer. The MCP tool surface sta
 - Identity collapse is policy, not storage: the store is mechanical (`entity_by_anchor`); the
   email-primary-key auto-collapse + manual `merge_entities` decision lives in the layer above.
 - `is_self` marks the connected user — the anchor for "my boss" / "my team" edge traversal.
+- CLAUDE.md `@import` (all verified empirically 2026-09-01): user-level `~/.claude/CLAUDE.md`
+  imports sibling files fine (relative, `~`, absolute), but a PROJECT-level CLAUDE.md silently
+  skips imports that resolve outside the project dir — so the installed rule import only works
+  at user level. A missing import is skipped silently (what `--disable` relies on), and
+  `claudeMdExcludes` in settings.json matches `@`-imported files (the per-project off switch).
 
 ## Status
 
@@ -70,6 +75,27 @@ Registered via `claude mcp add directory` (user scope) and proven live against a
 directory: self + org graph, teams, client orgs, and projects, with `works_on` edges seeded
 from GitLab commit authors (`glab` CLI) using alias-email identity collapse. Skill
 `directory-enroll` automates the find-across-systems + ask-relationship + record loop.
+
+Distribution (v0.3.0) is plugin-first: `.claude-plugin/plugin.json` bundles the MCP server
+(inline `mcpServers` with `${CLAUDE_PLUGIN_ROOT}` — NOT a root `.mcp.json`, which Claude Code
+would also read as a broken project-scope server when cwd is this repo), the two skills (moved
+`.claude/skills/` → `skills/`, exposed as `directory-mcp:<skill>`), and a SessionStart hook
+(`hooks/hooks.json`, matcher startup|resume|clear|compact) that cats `directory-rule.md` into
+context — the plugin equivalent of the global-CLAUDE.md rule. `.claude-plugin/marketplace.json`
+makes the repo its own marketplace (`claude plugin marketplace add <repo>` then
+`claude plugin install directory-mcp@directory-mcp`); toggling is `claude plugin
+disable|enable`, `--scope user|project|local`. Structural invariants in
+`tests/unit/test_plugin.py`; `claude plugin validate .` passes. The directory-graph skill now
+derives the repo root as two-up from its base dir (plugin layout); the manual installer seds
+that line to the absolute checkout path instead.
+
+Manual installer (fallback, kept): the proactive-use rule ships as `$CONFIG/directory-rule.md`
+plus a single `@./directory-rule.md` import between the existing CLAUDE.md markers (re-running
+migrates older inlined installs). Flags: `--uninstall` (skills + rule + block; MCP registration
+removal is printed, not run), `--disable` / `--enable` (rename the rule file aside — global
+toggle); per-project opt-out via `claudeMdExcludes` is documented in the README. `install.sh`
+is covered by `tests/unit/test_install.py`; `install.ps1` mirrors it (no pwsh on this machine
+to test).
 
 Landmine: the running MCP server loads code at startup — new tools / resolver changes need a
 reconnect to go live in-session, though DB writes are visible immediately.
