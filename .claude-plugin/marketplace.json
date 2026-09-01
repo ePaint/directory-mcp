@@ -1,0 +1,14 @@
+{
+  "name": "directory-mcp",
+  "description": "Marketplace for the directory-mcp plugin: a local consolidation directory of people, projects and artifacts across your connected systems.",
+  "owner": {
+    "name": "ePaint"
+  },
+  "plugins": [
+    {
+      "name": "directory-mcp",
+      "source": "./",
+      "description": "Consolidation directory MCP + skills + proactive-use rule, installed as one unit."
+    }
+  ]
+}

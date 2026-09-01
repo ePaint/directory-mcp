@@ -1,0 +1,14 @@
+{
+  "name": "directory-mcp",
+  "description": "Local consolidation directory of people, projects and artifacts across Slack / Jira / GitLab / Outlook / anything: the MCP server, the directory-enroll and directory-graph skills, and a SessionStart hook that injects the proactive-use rule into every session.",
+  "version": "0.3.0",
+  "author": {
+    "name": "ePaint"
+  },
+  "mcpServers": {
+    "directory": {
+      "command": "uv",
+      "args": ["run", "--directory", "${CLAUDE_PLUGIN_ROOT}", "python", "mcp_server.py"]
+    }
+  }
+}

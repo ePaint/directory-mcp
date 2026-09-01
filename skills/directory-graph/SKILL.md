@@ -9,22 +9,23 @@ Render the live directory SQLite DB to a standalone interactive vis-network grap
 
 ## Steps
 
-1. Render the graph. Run from a checkout of the `directory-mcp` repo (the installer rewrites
-   this line to an absolute path so it works from anywhere):
+1. Set `ROOT` to the repo root: two directories up from this skill's base directory.
+
+2. Render the graph:
 
    ```sh
-   uv run python scripts/graph/build_graph.py
+   uv run --directory "$ROOT" python scripts/graph/build_graph.py
    ```
 
-   It writes `scripts/graph/directory-graph.html` and prints the node/edge counts.
+   It writes `$ROOT/scripts/graph/directory-graph.html` and prints the node/edge counts.
 
-2. Open `scripts/graph/directory-graph.html` in the browser with the current platform's
+3. Open `$ROOT/scripts/graph/directory-graph.html` in the browser with the current platform's
    opener:
-   - macOS: `open scripts/graph/directory-graph.html`
-   - Linux: `xdg-open scripts/graph/directory-graph.html`
-   - Windows: `start "" scripts/graph/directory-graph.html`
+   - macOS: `open`
+   - Linux: `xdg-open`
+   - Windows: `start ""`
 
-3. Report the node/edge counts from the renderer's output.
+4. Report the node/edge counts from the renderer's output.
 
 ## Notes
 
