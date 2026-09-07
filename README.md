@@ -3,19 +3,93 @@
 [![Release](https://img.shields.io/github/v/release/ePaint/directory-mcp?sort=semver)](https://github.com/ePaint/directory-mcp/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A **local, single-user directory** for your AI coding agent: a consolidation layer that
-records the people, projects, teams and artifacts you work with — and their coordinates
-across every system you use (Slack, Jira, GitLab, GitHub, Outlook, Notion, …).
+A private address book for your AI coding agent. It remembers the people, projects and
+teams you work with — and where each of them lives in the tools you use (Slack, Jira, GitLab,
+GitHub, Outlook, Notion, …) — so when you say *"check what my boss said in the payments
+thread"*, your agent already knows who your boss is and where to look, instead of asking you
+every time.
 
-It exists to answer one kind of question well. When you tell your agent *"check what my
-boss said in the payments thread"*, the agent needs to turn "my boss" into a real person,
-and that person into the exact Slack id (or Jira account, or email) to hand to your other
-MCP servers. `directory-mcp` is the thing that remembers all of that, so the agent doesn't
-have to ask you every time.
+Everything stays in one small file on your machine. Nothing is shared or uploaded.
 
-It is **not** a shared service. It's a SQLite file on your machine, for your agent only.
+## Install
 
-## Why a graph instead of tables
+### Requirements
+
+You need three free tools installed. If you already have them, skip ahead.
+
+- **[Claude Code](https://code.claude.com/docs/en/quickstart)**
+- **[git](https://git-scm.com/downloads)** — on a Mac, typing `git` in the terminal offers to
+  install it; on Windows, run the installer and accept the defaults.
+- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — one command, shown at
+  the top of that page.
+
+No accounts or sign-ups needed.
+
+### Two commands
+
+In a terminal:
+
+```sh
+claude plugin marketplace add https://github.com/ePaint/directory-mcp.git
+claude plugin install directory-mcp@directory-mcp
+```
+
+The first tells Claude Code where the plugin comes from (you only ever do this once); the
+second installs it. Then start a new Claude Code session — or run `/reload-plugins` if the
+install output asks you to. The very first start takes a few extra seconds while it sets
+itself up.
+
+That's it. Everything below this point is optional.
+
+### Updating, pausing, removing
+
+- **Update**: `claude plugin update directory-mcp`
+- **Turn off / on** without uninstalling: `claude plugin disable directory-mcp` /
+  `claude plugin enable directory-mcp`. To turn it off for just one project, run the same
+  command inside that project with `--scope project` added.
+- **Uninstall**: `claude plugin uninstall directory-mcp`, then
+  `claude plugin marketplace remove directory-mcp`.
+
+## Getting started
+
+You never operate the directory directly — you talk to your agent, and it does the
+bookkeeping. Two things to do first:
+
+1. **Tell it who you are**, so *"my boss"* and *"my team"* mean something:
+   *"set me as Ada Lovelace, ada@example.com"*.
+2. **Add some people.** Say *"add my teammate Alex"*, or run `/directory-enroll` to add a
+   batch — everyone in this week's meetings, say. It finds each person across the tools your
+   agent is connected to, asks you the one thing only you know (how they relate to you), and
+   saves them.
+
+From then on, just ask: *"who's my boss?"*, *"what's the Slack handle of the person who owns
+checkout?"*, *"graph my org"*.
+
+## What's included
+
+- **The directory itself**, available to your agent in every session.
+- **A standing instruction** ([`directory-rule.md`](directory-rule.md)) that goes into every
+  session, telling the agent to look people up here *before* asking you, to check every
+  place the directory points to, and to save new people and relationships as it learns them.
+  Turn the plugin off and the instruction goes with it.
+- **Two skills**:
+  - `/directory-enroll` — add one person or a whole roster, as described above.
+  - `/directory-graph` — draw your directory as an interactive graph and open it in the browser.
+
+## Where your data lives
+
+- Your directory is one file: `~/.local/share/directory-mcp/directory.db`. To keep it somewhere
+  else, set the `DIRECTORY_DATABASE_URL` environment variable.
+- There is no server to sign in to and nothing leaves your machine. Only your own agent, on
+  your own computer, can read it.
+- Treat the file as you would your contacts: it accumulates names, roles and handles of the
+  people you work with.
+
+---
+
+The rest of this page is for people who want to know how it works or wire it up by hand.
+
+## How it works
 
 Real orgs are messy: a project sprawls across many Jira keys, scattered Slack channels and
 several repos; people change teams; clients have sub-projects. So there are no rigid
@@ -34,150 +108,14 @@ relation type are all **open vocabulary** — writes are normalized toward canon
 (so `Reports-To`, `reports-to` and `reportsto` all collapse to `reports_to`), but unknown
 values are kept, never rejected. Use whatever MCPs you use; the directory adapts.
 
-## Install
+### How disambiguation works
 
-### Requirements
-
-You need three free tools installed. If you already have them, skip ahead.
-
-- **[Claude Code](https://code.claude.com/docs/en/quickstart)**
-- **[git](https://git-scm.com/downloads)** — on a Mac, typing `git` in the terminal offers to
-  install it; on Windows, run the installer and accept the defaults.
-- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — one command, shown at
-  the top of that page.
-
-No accounts or sign-ups needed.
-
-### As a Claude Code plugin (recommended)
-
-One install wires up all three pieces — the MCP server, both [bundled skills](#bundled-skills),
-and the [proactive-use rule](#make-your-agent-reach-for-it), injected into every session by a
-SessionStart hook:
-
-```sh
-claude plugin marketplace add https://github.com/ePaint/directory-mcp.git
-claude plugin install directory-mcp@directory-mcp
-```
-
-The first command registers this repo as a plugin marketplace (a one-time step; there is no
-central registry to install from directly), the second installs the plugin from it. The HTTPS
-URL works without GitHub SSH keys; the shorthand `ePaint/directory-mcp` clones over SSH. A local
-clone's path works too. If the install summary says `Run /reload-plugins to activate`, do that,
-or start a new Claude Code session.
-
-The first session runs `uv sync` for the server's dependencies, so the `directory` server takes
-a few seconds longer to connect once. The database is created on first run at
-`~/.local/share/directory-mcp/directory.db`; override with the `DIRECTORY_DATABASE_URL`
-environment variable if you want it elsewhere.
-
-Update later with `claude plugin update directory-mcp`.
-
-Toggle it without uninstalling — this turns the server, the skills and the rule off together:
-
-- **Globally**: `claude plugin disable directory-mcp` / `claude plugin enable directory-mcp`.
-- **Per project**: the same commands with `--scope project` (shared via the project's
-  settings) or `--scope local` (personal, untracked), run inside that project.
-
-Uninstall: `claude plugin uninstall directory-mcp`, then
-`claude plugin marketplace remove directory-mcp`.
-
-### Manual install (no plugin)
-
-If you'd rather not use plugins, wire the pieces up individually:
-
-```sh
-git clone https://github.com/ePaint/directory-mcp.git
-cd directory-mcp
-uv sync
-claude mcp add directory -- uv run --directory /absolute/path/to/directory-mcp python mcp_server.py
-```
-
-Then run the installer for the skills and the rule:
-
-```sh
-./install.sh         # macOS / Linux / Git Bash / WSL
-```
-
-```powershell
-.\install.ps1        # Windows PowerShell
-```
-
-It's idempotent — safe to re-run, e.g. after you move the repo (the skill bakes in an
-absolute path to this checkout). Start a new Claude Code session afterwards to pick everything
-up. Pass `--no-rule` (PowerShell: `-NoRule`) to install only the skills and leave your
-`CLAUDE.md` untouched.
-
-Manual uninstall:
-
-```sh
-./install.sh --uninstall     # PowerShell: .\install.ps1 -Uninstall
-claude mcp remove directory
-```
-
-The first command removes the skills, the rule file and the `CLAUDE.md` import block; the
-server registration is separate, so remove it with the second. To merely turn the rule off
-without uninstalling, see [toggling](#make-your-agent-reach-for-it).
-
-## Getting started
-
-You drive the directory through your agent in plain language — it calls the tools for you.
-Two things to do first:
-
-1. **Tell it who you are**, so self-relative phrases like *"my boss"* resolve: *"set me as
-   Ada Lovelace, ada@example.com"* → `set_self`.
-2. **Enroll some people.** The bundled [`/directory-enroll`](#bundled-skills) skill finds a
-   person across your connected MCPs, asks how they relate to you, and records them. Or just
-   ask: *"add my teammate Alex"*.
-
-After that, ask things like *"who's my boss?"*, *"what's the Slack id for the person who
-owns checkout?"*, or *"graph my org"* — and the agent resolves them against the directory.
-
-## Make your agent reach for it
-
-The server ships usage `instructions` that Claude Code surfaces automatically — but the
-strongest signal is [`directory-rule.md`](directory-rule.md) in your session context: resolve
-any person/project against the directory *first*, never ask who someone is if the directory
-knows, follow through on every anchor it returns, and capture handles/relationships as you
-work.
-
-**Plugin install**: a SessionStart hook injects the rule into every session (re-firing on
-resume, clear and compact), so there is nothing to wire up — disable the plugin and the rule
-goes with it.
-
-**Manual install**: the installer copies the rule to `~/.claude/directory-rule.md` and adds a
-single `@./directory-rule.md` import line to your `~/.claude/CLAUDE.md`, between markers so
-re-running won't duplicate it (re-running also migrates older installs that inlined the whole
-rule). To scope it to one repo instead, inline the snippet into that project's `CLAUDE.md` —
-an import won't work there, because project-level imports that resolve outside the project
-directory are silently skipped.
-
-Because the manually installed rule is one imported file, it toggles without editing
-`CLAUDE.md`:
-
-- **Globally** — `./install.sh --disable` / `--enable` (PowerShell: `-Disable` / `-Enable`).
-  This renames the rule file aside; Claude Code skips a missing import silently.
-- **Per project** — exclude the file in that project's `.claude/settings.json` (or
-  `settings.local.json`), which catches `@`-imported files too:
-
-  ```json
-  { "claudeMdExcludes": ["**/directory-rule.md"] }
-  ```
-
-## Bundled skills
-
-The repo ships two [Claude Code skills](https://docs.claude.com/en/docs/claude-code/skills)
-under `skills/`. The plugin exposes them everywhere automatically (namespaced, e.g.
-`directory-mcp:directory-graph`). The manual installer instead copies both to
-`~/.claude/skills/` (honoring `CLAUDE_CONFIG_DIR` if set) and rewrites `/directory-graph` to
-point its renderer at this checkout so it works from any working directory.
-
-- **`/directory-enroll`** — turn a name (or a roster, like everyone in this week's meetings)
-  into directory entries. It resolves each person across whatever people-search MCPs you have
-  connected, collapses duplicates by email, asks you the one thing only you know (the
-  relationship), and records it. MCP-only, so it works from anywhere.
-- **`/directory-graph`** — render your directory to an interactive graph and open it in the
-  browser. It runs the bundled renderer (`scripts/graph/build_graph.py`); the installer points
-  it at this checkout, so once installed it works from anywhere.
+The `interaction` log is what makes ambiguous lookups resolve sensibly. For *"alex from the
+acme project"*, candidates are ranked **connection-first**: the Alex actually linked to a
+matching Acme wins. Connection is the confidence gate — exactly one connected candidate
+gives a confident answer; two or more set `ambiguous: true` and return *all* of them.
+Activity (how recently/often something is touched) only orders the best guess; it never
+silently drops a candidate. The agent consuming the result decides.
 
 ## Tool reference
 
@@ -216,24 +154,58 @@ underneath. Your agent picks these for you; you rarely name them directly.
 - `tag(subject, label)` / `find_by_tag(label)` — lightweight tagging.
 - `merge(keep, drop)` — fold a duplicate entity into another.
 
-### How disambiguation works
+## Manual install (no plugin)
 
-The `interaction` log is what makes ambiguous lookups resolve sensibly. For *"alex from the
-acme project"*, candidates are ranked **connection-first**: the Alex actually linked to a
-matching Acme wins. Connection is the confidence gate — exactly one connected candidate
-gives a confident answer; two or more set `ambiguous: true` and return *all* of them.
-Activity (how recently/often something is touched) only orders the best guess; it never
-silently drops a candidate. The agent consuming the result decides.
+If you'd rather not use plugins, wire the three pieces up individually:
 
-## Privacy & scope
+```sh
+git clone https://github.com/ePaint/directory-mcp.git
+cd directory-mcp
+uv sync
+claude mcp add directory -- uv run --directory /absolute/path/to/directory-mcp python mcp_server.py
+```
 
-- **Single-user and local by design.** The server speaks stdio to one local agent. There is
-  no network listener and no authentication, because there is nothing multi-tenant to
-  authenticate — it points at *your* SQLite file and no one else's.
-- The database lives outside the repo (`~/.local/share/directory-mcp/`) and is gitignored as
-  a backstop, along with the rendered graph and any `.env`.
-- Treat the database as you would your contacts: it accumulates names, roles and
-  cross-platform handles of people you work with.
+Then run the installer for the skills and the rule:
+
+```sh
+./install.sh         # macOS / Linux / Git Bash / WSL
+```
+
+```powershell
+.\install.ps1        # Windows PowerShell
+```
+
+Safe to re-run, e.g. after you move the repo (the `/directory-graph` skill records where the
+checkout is). Start a new Claude Code session afterwards. Pass `--no-rule` (PowerShell:
+`-NoRule`) to install only the skills and leave your `CLAUDE.md` untouched.
+
+The installer copies the skills to `~/.claude/skills/` (honoring `CLAUDE_CONFIG_DIR` if set),
+copies the rule to `~/.claude/directory-rule.md`, and adds a single `@./directory-rule.md`
+import line to your `~/.claude/CLAUDE.md` between markers, so re-running won't duplicate it
+(re-running also migrates older installs that inlined the whole rule). To scope the rule to one
+repo instead, inline the snippet into that project's `CLAUDE.md` — an import won't work there,
+because project-level imports that resolve outside the project directory are silently skipped.
+
+Because the rule is one imported file, it toggles without editing `CLAUDE.md`:
+
+- **Globally** — `./install.sh --disable` / `--enable` (PowerShell: `-Disable` / `-Enable`).
+  This renames the rule file aside; Claude Code skips a missing import silently.
+- **Per project** — exclude the file in that project's `.claude/settings.json` (or
+  `settings.local.json`), which catches `@`-imported files too:
+
+  ```json
+  { "claudeMdExcludes": ["**/directory-rule.md"] }
+  ```
+
+Manual uninstall:
+
+```sh
+./install.sh --uninstall     # PowerShell: .\install.ps1 -Uninstall
+claude mcp remove directory
+```
+
+The first command removes the skills, the rule file and the `CLAUDE.md` import block; the
+server registration is separate, so remove it with the second.
 
 ## License
 
