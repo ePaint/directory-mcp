@@ -36,7 +36,18 @@ values are kept, never rejected. Use whatever MCPs you use; the directory adapts
 
 ## Install
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/) ([install uv](https://docs.astral.sh/uv/getting-started/installation/)).
+### Requirements
+
+Three things on your machine, nothing else — no accounts, no sign-ups:
+
+- **[Claude Code](https://code.claude.com/docs/en/quickstart)** — the plugin is for it.
+- **[git](https://git-scm.com/downloads)** — Claude Code uses it to fetch the plugin. macOS
+  offers to install it the first time you run `git`; Windows users take the
+  [Git for Windows](https://git-scm.com/download/win) installer with the defaults.
+- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — one-line install; it runs
+  the server and fetches Python 3.12+ for it automatically, so you don't need Python set up.
+
+The repo is public, so installing needs **no GitHub account**.
 
 ### As a Claude Code plugin (recommended)
 
