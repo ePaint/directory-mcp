@@ -1,14 +1,24 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "directory-mcp",
+  "displayName": "Directory MCP",
   "description": "Local consolidation directory of people, projects and artifacts across Slack / Jira / GitLab / Outlook / anything: the MCP server, the directory-enroll and directory-graph skills, and a SessionStart hook that injects the proactive-use rule into every session.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
-    "name": "ePaint"
+    "name": "ePaint",
+    "url": "https://github.com/ePaint"
   },
+  "homepage": "https://github.com/ePaint/directory-mcp#readme",
+  "repository": "https://github.com/ePaint/directory-mcp",
+  "license": "MIT",
+  "keywords": ["mcp", "directory", "people", "org-chart", "slack", "jira", "gitlab", "outlook", "memory"],
   "mcpServers": {
     "directory": {
       "command": "uv",
-      "args": ["run", "--directory", "${CLAUDE_PLUGIN_ROOT}", "python", "mcp_server.py"]
+      "args": ["run", "--no-dev", "--directory", "${CLAUDE_PLUGIN_ROOT}", "python", "mcp_server.py"],
+      "env": {
+        "UV_PROJECT_ENVIRONMENT": "${CLAUDE_PLUGIN_DATA}/.venv"
+      }
     }
   }
 }

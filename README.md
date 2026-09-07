@@ -45,13 +45,22 @@ and the [proactive-use rule](#make-your-agent-reach-for-it), injected into every
 SessionStart hook:
 
 ```sh
-claude plugin marketplace add ePaint/directory-mcp   # or the path to a local clone
+claude plugin marketplace add https://github.com/ePaint/directory-mcp.git
 claude plugin install directory-mcp@directory-mcp
 ```
 
-Start a new Claude Code session to pick it up. The database is created on first run at
+The first command registers this repo as a plugin marketplace (a one-time step; there is no
+central registry to install from directly), the second installs the plugin from it. The HTTPS
+URL works without GitHub SSH keys; the shorthand `ePaint/directory-mcp` clones over SSH. A local
+clone's path works too. If the install summary says `Run /reload-plugins to activate`, do that,
+or start a new Claude Code session.
+
+The first session runs `uv sync` for the server's dependencies, so the `directory` server takes
+a few seconds longer to connect once. The database is created on first run at
 `~/.local/share/directory-mcp/directory.db`; override with the `DIRECTORY_DATABASE_URL`
-environment variable (or a `.env` file in the plugin root) if you want it elsewhere.
+environment variable if you want it elsewhere.
+
+Update later with `claude plugin update directory-mcp`.
 
 Toggle it without uninstalling — this turns the server, the skills and the rule off together:
 

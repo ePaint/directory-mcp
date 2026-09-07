@@ -18,6 +18,15 @@ def test_plugin_manifest_matches_pyproject_version() -> None:
     assert manifest["version"] == pyproject["project"]["version"]
 
 
+def test_plugin_manifest_carries_catalog_metadata() -> None:
+    manifest = _json(".claude-plugin/plugin.json")
+
+    assert manifest["repository"] == "https://github.com/ePaint/directory-mcp"
+    assert str(manifest["homepage"]).startswith("https://github.com/ePaint/directory-mcp")
+    assert manifest["license"] == "MIT"
+    assert isinstance(manifest["keywords"], list) and "mcp" in manifest["keywords"]
+
+
 def test_marketplace_lists_the_plugin_at_repo_root() -> None:
     marketplace = _json(".claude-plugin/marketplace.json")
 
@@ -35,7 +44,17 @@ def test_mcp_config_runs_the_bundled_server_from_plugin_root() -> None:
     assert directory["command"] == "uv"
     assert "${CLAUDE_PLUGIN_ROOT}" in directory["args"]
     assert "mcp_server.py" in directory["args"]
+    assert "--no-dev" in directory["args"]
     assert (_REPO / "mcp_server.py").is_file()
+
+
+def test_mcp_config_keeps_the_venv_outside_the_versioned_plugin_root() -> None:
+    servers = _json(".claude-plugin/plugin.json")["mcpServers"]
+
+    assert isinstance(servers, dict)
+    venv = servers["directory"]["env"]["UV_PROJECT_ENVIRONMENT"]
+    assert venv.startswith("${CLAUDE_PLUGIN_DATA}/")
+    assert "${CLAUDE_PLUGIN_ROOT}" not in venv
 
 
 def test_session_start_hook_injects_the_shipped_rule() -> None:

@@ -76,7 +76,7 @@ directory: self + org graph, teams, client orgs, and projects, with `works_on` e
 from GitLab commit authors (`glab` CLI) using alias-email identity collapse. Skill
 `directory-enroll` automates the find-across-systems + ask-relationship + record loop.
 
-Distribution (v0.3.0) is plugin-first: `.claude-plugin/plugin.json` bundles the MCP server
+Distribution (v0.3.1) is plugin-first: `.claude-plugin/plugin.json` bundles the MCP server
 (inline `mcpServers` with `${CLAUDE_PLUGIN_ROOT}` — NOT a root `.mcp.json`, which Claude Code
 would also read as a broken project-scope server when cwd is this repo), the two skills (moved
 `.claude/skills/` → `skills/`, exposed as `directory-mcp:<skill>`), and a SessionStart hook
@@ -96,6 +96,28 @@ removal is printed, not run), `--disable` / `--enable` (rename the rule file asi
 toggle); per-project opt-out via `claudeMdExcludes` is documented in the README. `install.sh`
 is covered by `tests/unit/test_install.py`; `install.ps1` mirrors it (no pwsh on this machine
 to test).
+
+Plugin distribution landmines (all verified empirically 2026-09-07 against Claude Code
+2.1.263, in throwaway `CLAUDE_CONFIG_DIR`s):
+- `version` in plugin.json PINS users: pushing commits without bumping it leaves every
+  installed copy on the cached version, silently. Bump + tag on every release (test enforces
+  plugin.json == pyproject).
+- `${CLAUDE_PLUGIN_ROOT}` is `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/` — a
+  new dir per version, so nothing may live there: the server runs `uv run --no-dev` with
+  `UV_PROJECT_ENVIRONMENT=${CLAUDE_PLUGIN_DATA}/.venv` (`~/.claude/plugins/data/
+  directory-mcp-directory-mcp/`, survives updates) and the README no longer suggests a `.env`
+  in the plugin root. `${CLAUDE_PLUGIN_DATA}` does resolve inside `mcpServers.env`.
+- `marketplace add owner/repo` clones over SSH (`git@github.com:`); the README gives the HTTPS
+  `.git` URL so users without GitHub keys succeed. Both forms tested.
+- A marketplace added from a local *directory* copies the working tree (incl. gitignored
+  `.venv`, caches) and resolves `${CLAUDE_PLUGIN_ROOT}` to the checkout itself — so a local
+  install never exercises the real GitHub path. Test releases with
+  `CLAUDE_CONFIG_DIR=<scratch> claude plugin marketplace add https://github.com/ePaint/directory-mcp.git`
+  then `claude plugin install directory-mcp@directory-mcp -y` and `claude mcp list`.
+- There is no direct install-from-GitHub; the marketplace step is mandatory. The only way to
+  remove it is listing in `anthropics/claude-plugins-official`. Per-repo team rollout is
+  `extraKnownMarketplaces` + `enabledPlugins` in a project's `.claude/settings.json`
+  (deliberately not in the README — the target is "anyone, two commands").
 
 Landmine: the running MCP server loads code at startup — new tools / resolver changes need a
 reconnect to go live in-session, though DB writes are visible immediately.
